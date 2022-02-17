@@ -1,0 +1,70 @@
+---
+title: "HW04"
+author: "Rishab Kulkarni"
+date: "2/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+install.packages("epitools")
+```
+
+**#1**
+```{r}
+tab <- matrix(c(42, 24, 8, 15, 10, 10, 17, 5, 5), ncol=3, byrow=TRUE)
+
+colnames(tab) <- c('E','G','F-P')
+rownames(tab) <- c('Twisted','Both','Direct')
+
+tab <- as.table(tab)
+
+
+chi.sq_tab <- chisq.test(tab, correct = FALSE)
+chi.sq_tab
+
+chi.sq_tab$expected
+
+chi.sq_tab$stdres
+```
+
+**#2**
+```{r}
+sb <- matrix(c(1601, 162527, 510, 412368), ncol=2, byrow=TRUE)
+
+colnames(sb) <- c('Fatal','Non-Fatal')
+rownames(sb) <- c('No Seatbelt','Seatbelt')
+
+sb <- as.table(sb)
+
+#((1601/2111)/(510/2111))
+
+(1601*412368)/(162527*510)
+
+library(epitools)
+
+oddsratio.wald(sb, conf.level = 0.95)
+
+
+chi.sq_sb <- chisq.test(sb)
+chi.sq_sb
+```
+
+**#3**
+```{r}
+((1601/164128)/(510/412878))
+
+riskratio.wald(sb, conf.level = 0.95)
+```
+
+```{r}
+(1601/164128) - (510/412878)
+
+prop.test(sb)
+
+
+```
+
+
+

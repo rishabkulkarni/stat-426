@@ -1,0 +1,103 @@
+---
+title: "HW03"
+author: "Rishab Kulkarni"
+date: "2/9/2022"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Question 1**
+
+```{r}
+# both conditional odds ratios
+(14*381)/(49*75)
+(138*416)/(260*134)
+
+# marginal odds ratio
+(152*797)/(335*183)
+```
+
+**i.**
+The conditional odds ratios are 1.451429 for the non-smoker group,
+and 1.647761 for the smoker group.
+
+The marginal odds ratio comes from the marginal table, which is
+obtained by summing over the levels of the confounding variable, Z
+or smoking status. The marginal odds ratio is 1.976087
+
+**ii.**
+I think the stratification on smoking status was important in this
+study, because it's a confounding variable. Smoking status can change 
+the relationship between coffee drinking and MI.
+
+**iii.**
+The relative risk cannot be directly estimated because we're dealing
+with a retrospective study, which allows only $\hat{\theta}$ to be
+estimated. In retrospective studies, we fix the number of outcomes,
+so $\hat{\pi_1}$ and $\hat{\pi_2}$ aren't meaningful or significant.
+
+**Question 2**
+
+**i.**
+$\pi_{1,2} = 1/14 = 0.071$
+
+**ii.**
+$\pi_{1|3} = 7/9 = 0.778$
+
+$\pi_{1|1} = 7/12 = 0.583$
+
+
+**Question 3**
+
+**i.**
+```{r}
+# sample odds ratio
+((32/36)*(4/36))/((13/16)*(3/16))
+```
+
+**ii.**
+```{r}
+# relative risk
+((4/36)/(3/16))
+```
+
+**Question 4**
+
+**i.**
+```{r}
+# odds ratio
+(1198*1278)/(1493*567)
+```
+
+**ii.**
+Yes, these results indicate unfairness. An odds ratio of 1.8 means that
+males were ~1.8 times more likely to be admitted at the University of
+California, Berkeley than females in 1972.
+
+**iii.**
+A useful stratification variable can be the admission major Just like how 
+we stratified smoking status into non-smoker and smoker in #1, we can 
+stratify academic major into economics, statistics, math, etc. 
+
+Stratifying academic major upon admission can give further insight on
+the unfairness associated with admission into certain majors depending
+on male or female applicant.
+
+**Question 5**
+
+```{r}
+# sensitivity
+(41/(41+0))
+
+# specificity
+(35/(35+183))
+```
+
+The sensitivity and specificity of Dyspnea as a test for CHF are
+1 and 0.1605505, respectively.
+

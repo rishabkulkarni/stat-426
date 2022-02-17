@@ -1,0 +1,128 @@
+---
+title: "HW01"
+author: "Rishab Kulkarni"
+date: "1/26/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# i.
+
+Likelihood function:
+
+$\prod_{i=1}^{n}\frac{\lambda^{x_i} e^{-\lambda}}{x_i!}$
+
+Expanding likelihood function:
+
+$\frac{\lambda^{\sum_{i=1}^{n}x_i}e^{-n\lambda}}{\prod_{i=1}^{n}x_i!}$
+
+Log likelihood function:
+
+$\ln\lambda^{\sum_{i=1}^{n}x_i}+\ln e^{-n\lambda}-\ln\prod_{i=1}^{n}x_i!$
+
+Simplifying log likelihood function:
+
+$\sum_{i=1}^{n}x_i\ln\lambda-n\lambda-\ln\prod_{i=1}^{n}x_i!$
+
+Derivative of log likelihood function with respect to $\lambda$:
+
+$\frac{\sum_{i=1}^{n}x_i}{\lambda}-n$
+
+Now, we set this expression equal to 0 and solve for $\lambda$:
+
+$\frac{\sum_{i=1}^{n}x_i}{\lambda}-n = 0$
+
+$\frac{\sum_{i=1}^{n}x_i}{\lambda} = n$
+
+$\frac{\sum_{i=1}^{n}x_i}{n}=\hat{\lambda}$
+
+$\hat{\lambda}=\bar{x}$
+
+
+# ii.
+
+The exact variance of $\hat{\lambda}$:
+
+The variance of $\hat{\lambda}$ equals the variance of
+$\bar{x}$, which is $\frac{\sigma_x^2}{n}$. The variance
+of Poisson distribution is $\lambda$, so the exact
+variance equals $\frac{\lambda}{n}$.
+
+# iii.
+
+Fisher information of the Poisson distribution equals
+$\frac{n}{\lambda}$. The asymptotic variance of $\hat{\lambda}$
+is the inverse of the Fisher information. Thus, the
+asymptotic variance equals $\frac{\lambda}{n}$, which
+is the same as in (ii).
+
+# 2.
+
+MLE estimate for $\hat{\lambda}$ is $\bar{x}$, so we can
+use that in our Wald confidence interval.
+
+```{r}
+x <- c(9,16,17,14,17,11,12,15,13,9)
+
+x_bar <- mean(x)
+
+# Wald CI
+x_bar +c(-1,1) * qnorm(1-0.05/2) * sqrt(x_bar/10)
+```
+
+# 3.
+
+Wald test statistic:
+
+$\frac{\hat{\lambda}-\lambda_0}{\sqrt\frac{\lambda}{n}}$
+
+```{r}
+
+# Wald test statistic
+w <- (x_bar-10) / sqrt(x_bar/10)
+w
+
+# p-value
+1 - pnorm(w)
+```
+
+# 4.
+
+```{r}
+
+# p-value
+1 - ppois(134, 100)
+```
+
+# 5.
+
+```{r}
+
+# range
+r <- 0:10
+
+# Poisson density function
+
+plot(r, dpois(r, lambda = 6), type='h')
+title(main = "Poisson")
+
+# Binomial density function
+
+plot(r, dbinom(r, size= 200, prob= 0.03), type='h')
+title(main = "Binomial")
+```
+
+Observations:
+
+The density functions of the Poisson and Binomial random variables are
+nearly the same. However, P(X = 0), P(X = 1), ... P(X = 5) in the 
+Binomial density function are less than P(X = 0), P(X = 1), ... P(X = 5)
+in the Poisson density function. P(X = 8), P(X = 9), and P(X = 10) are 
+also less in the Binomial density function than P(X = 8), P(X = 9), and 
+P(X = 10) in the Poisson density function.
+
