@@ -1,0 +1,270 @@
+---
+title: "HW08"
+author: "Rishab Kulkarni"
+date: "3/22/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**1i.**
+
+```{r}
+data("UCBAdmissions")
+
+berk <- data.frame(UCBAdmissions)
+
+b <- reshape(berk, v.names = "Freq",
+             timevar = "Admit",
+             idvar = c("Gender", "Dept"),
+             direction = "wide")
+```
+
+**1ii.**
+
+```{r}
+# additive model
+add.mod <- glm(cbind(Freq.Admitted, Freq.Rejected) ~ Gender + Dept, family = "binomial", b)
+
+summary(add.mod)
+```
+
+After controlling for Dept:
+
+The odds of female admission is
+1.105 times the male admissions.
+
+Estimated odds ratio of admission
+for females versus males:
+
+```{r}
+exp(0.09987)
+```
+
+Estimated odds ratio of admission 
+to department B verses department A:
+
+```{r}
+exp(-0.04340)
+```
+
+Estimated odds ratio of admission
+to department C versus department A:
+
+```{r}
+exp(-1.26260)
+```
+
+Estimated odds ratio of admission
+to department D verses department A:
+
+```{r}
+exp(-1.29461 )
+```
+
+Estimated odds ratio of admission
+to department E versus department A:
+
+```{r}
+exp(-1.73931)
+```
+
+Estimated odds ratio of admission
+to department F versus department A:
+
+```{r}
+exp(-3.30648)
+```
+
+**2i.**
+
+```{r}
+# residual deviance test p-value
+
+1-pchisq(deviance(add.mod), df.residual(add.mod))
+```
+
+**2ii.**
+
+```{r}
+# Pearson residuals
+
+resid(add.mod, type = "pearson")
+
+plot(resid(add.mod, type = "pearson"))
+```
+
+The outliers seem to be 
+indices 3, 9, 17.
+
+These indices correspond to females
+admitted to Dept B, males admitted
+to Dept C, and males admitted to
+Dept E.
+
+**2iii.**
+
+```{r}
+
+x.mod <- glm(cbind(Freq.Admitted, Freq.Rejected) ~ Gender, family = "binomial", b)
+
+summary(x.mod)
+```
+
+Note:
+
+Calculated 1/$e^{\hat{\beta}}$
+because the summary compares female
+admission to male admission; we want
+male admission versus female admission.
+
+The odds ratio for male admissions
+versus female admission is:
+
+```{r}
+1/exp(-0.61035)
+```
+
+This odds ratio is higher than the 
+same odds ratio of male admission 
+versus female admission in the 
+additive model.
+
+**2iv.**
+
+```{r}
+library(lmtest)
+
+z.mod <- glm(cbind(Freq.Admitted, Freq.Rejected) ~ Dept, family = "binomial", b)
+
+lrtest(add.mod, z.mod)
+```
+
+The p-value from the likelihood-ratio 
+test was 0.2159
+
+We fail to reject the null hypothesis
+that the homogeneous association or
+additive model does not hold.
+
+**3i.**
+
+```{r}
+library(faraway)
+data("wbca")
+
+m <- glm(Class ~., family = "binomial", wbca)
+summary(m)
+```
+
+At the 5% level - Adhes, BNucl, Chrom,
+NNucl, and Thick are significant 
+predictors.
+
+**3ii.**
+
+```{r}
+# removing USize
+
+m2 <- glm(Class ~. -USize, family = "binomial", wbca)
+summary(m2)
+```
+
+```{r}
+# removing Epith
+
+m3 <- glm(Class ~. -USize-Epith, family = "binomial", wbca)
+summary(m3)
+```
+
+```{r}
+# removing UShap
+
+m4 <- glm(Class ~. -USize-Epith-UShap, family = "binomial", wbca)
+summary(m4)
+```
+
+```{r}
+# removing Mitos
+
+m5 <- glm(Class ~. -USize-Epith-UShap-Mitos, family = "binomial", wbca)
+
+# final model
+summary(m5)
+```
+
+The standard errors for the coefficients
+in the final model are lower than those
+in the full model.
+
+**4i.**
+
+```{r}
+# backwards elimination
+
+back.m <- step(m)
+
+summary(back.m)
+```
+
+Used `step`()
+
+Here, the final model still includes
+insignificant predictors at the 5%
+level. The final model includes UShap
+and Mitos, which are not included in
+the final model from part 3 (ii).
+
+**4ii.**
+
+```{r}
+# forwards selection
+
+m.int <- glm(Class ~ 1, family = "binomial", wbca)
+
+step(m.int, scope=list(upper=m, lower=~1), direction="forward")
+```
+
+```{r}
+# summary of final model after forwards selection
+
+fwd.m <- glm(Class ~. -Epith-UShap, family = "binomial", wbca)
+summary(fwd.m)
+```
+
+
+The final model using backwards 
+elimination was different than 
+the final model using forwards 
+selection.
+
+The final model using backwards
+elimination had an AIC of 105.66,
+whereas the final model using
+forwards selection had an AIC of
+106.9
+
+The final model after using
+backwards elimination is the
+better fit due to the lower
+AIC score.
+
+**5i.**
+
+```{r}
+(2^9) - 1
+```
+
+**5ii.**
+
+```{r}
+n.mod <- choose(9,2) + choose(9,3)*choose(3,2) + choose(9,4)*choose(4,2) + choose(9,5)*choose(5,2) + choose(9,6)*choose(6,2) + choose(9,7)*choose(7,2) + choose(9,8)*choose(8,2) + choose(9,9)*choose(9,2)
+
+# including models w/ no interaction terms
+n.mod + 8
+```
+

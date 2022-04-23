@@ -1,0 +1,224 @@
+---
+title: "HW06"
+author: "Rishab Kulkarni"
+date: "2/28/2022"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**1.**
+
+```{r}
+library(pscl)
+data("prussian")
+
+# fitting model1, model2
+
+m.1 <- glm(y ~ corp,
+           family = poisson,
+           prussian)
+
+m.2 <- glm(y ~ corp + year,
+           family = poisson,
+           prussian)
+```
+
+**(i)**
+```{r}
+library(lmtest)
+
+lrtest(m.1, m.2)
+```
+
+p-value from likelihood-ratio test is 0.1305
+
+at the 5% level, we fail to reject the null
+hypothesis that death and year are independent.
+
+
+```{r}
+waldtest(m.1, m.2)
+```
+
+p-value from Wald test is 0.1324
+
+at the 5% level, we do not reject the null
+hypothesis that death and year are independent.
+
+both the likelihood-ratio and Wald test
+have the same conclusion. 
+
+we've ample evidence that suggests the
+model without the year variable is a
+better fit.
+
+**(ii)**
+
+the maximum likelihood estimator for the
+poisson distribution is the sample mean
+of observations. 
+
+assuming the death rates are poisson, 
+the mle of the poisson rate $\lambda$
+is the sample mean of the response.
+
+```{r}
+mean(prussian$y)
+```
+
+**(iii)**
+
+to solve this, we must use the poisson pmf,
+so we need lambda.
+
+$\lambda=\mu(x)=e^{\alpha+\beta{x}}$
+
+```{r}
+p <- predict.glm(m.1, data.frame(corp="III"), type = "response")
+
+dpois(3, p)
+```
+
+**2.**
+
+**(i)**
+```{r}
+library(faraway)
+
+data("discoveries")
+
+year <- 1860:1959
+
+# poisson model
+d <- glm(discoveries ~ year,
+         family = poisson,
+         discoveries)
+
+waldtest(d)
+```
+
+p-value for the Wald test is 0.008059
+
+**(ii)**
+
+```{r}
+summary(d)
+```
+
+the mean number of discoveries each year 
+changes by a factor of $e^{-0.005360}$ or ~0.995
+
+**(iii)**
+
+```{r}
+# lower bound
+exp(-0.005360 - qnorm(1-0.05/2)*0.001982)
+
+# upper bound
+exp(-0.005360 + qnorm(1-0.05/2)*0.001982)
+```
+
+**(iv)**
+
+to solve this, we must use the poisson pmf,
+so we need lambda.
+
+$\lambda=\mu(x)=e^{\alpha+\beta{x}}$
+
+```{r}
+m <- predict.glm(d, data.frame(year=1960), type = "response")
+
+dpois(4, m)
+```
+
+**(v)**
+
+```{r}
+1-pchisq(deviance(d), df.residual(d))
+```
+
+at the 5% level, we reject the null hypothesis
+that the model is a good fit of the data.
+
+thus, the deviance doesn't support that the 
+model fits the data.
+
+**3.**
+
+**(i)**
+
+```{r}
+data("esdcomp")
+
+# fitting model
+ratemod <- glm(complaints ~ residency + gender +
+                 offset(log(visits)) + I(visits/hours),
+               family = poisson, esdcomp)
+
+summary(ratemod)
+```
+
+$e^{-0.36733}$ is the average change in mean 
+rate of complaints between those who are in 
+residency and those who aren't.
+
+$e^{0.07292}$ is the average change in mean
+rate of complaints between males and females.
+
+for every one-unit increase in the visits/hr 
+rate, the mean rate of complaints changes by
+a factor of $e^{0.49344}$
+
+the rate of complaints changes by a factor of 
+$e^{-7.33596}$, with other variables set to 0.
+
+**(ii)**
+
+```{r}
+newdata = data.frame(gender = "F", residency = "Y",
+                     visits = 2500, hours = 1250)
+
+a <- predict.glm(ratemod, newdata, type = "response")
+
+1-ppois(4, a)
+```
+
+**4.**
+
+```{r}
+# p-value
+
+1-pchisq(deviance(ratemod), df.residual(ratemod))
+```
+
+at the 5% level, we reject the null hypothesis
+that ratemod is a good fit of the data.
+
+**5.**
+
+**(i)**
+
+```{r}
+mean(esdcomp$visits/esdcomp$hours)
+
+sd(esdcomp$visits/esdcomp$hours)
+```
+
+**(ii)**
+
+for a k-unit increase, the response changes
+by a factor of $e^{\beta{k}}$.
+
+thus, the rate of complaints will change
+by a factor of $e^{\beta/4}$.
+
+$e^{\frac{0.49344}{4}}=1.1313$
+
+the rate of complaints changes by ~13%
+for every extra 0.25 visits/hr
+

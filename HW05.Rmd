@@ -1,0 +1,169 @@
+---
+title: "HW05"
+author: "Rishab Kulkarni"
+date: "2/22/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Question 1**
+
+```{r}
+z <- matrix(c(1,9,4,8), ncol=2, byrow=TRUE)
+
+colnames(z) <- c('Yes','No')
+rownames(z) <- c('Zinc','Placebo')
+
+z <- as.table(z)
+```
+
+**1i)**
+
+```{r}
+(1*8)/(9*4)
+```
+
+**1ii)**
+
+```{r}
+fisher.test(z, alternative = "less")
+```
+
+$\hat{\theta} = 4/9$
+
+The p-value was 0.218, which is greater than $\alpha=0.05$. 
+Thus, we fail to reject the null hypothesis that zinc tablets 
+and the common cold are independent.
+
+**Question 2**
+
+**2i)**
+
+$\pi(x)=\frac{e^{\alpha+\beta{x}}}{1+e^{\alpha+\beta{x}}}$
+
+$1-\pi(x)=1-\frac{e^{\alpha+\beta{x}}}{1+e^{\alpha+\beta{x}}}=\frac{1}{1+e^{\alpha+\beta{x}}}$
+
+$\frac{\pi(x)}{1-\pi(x)}=\frac{\frac{e^{\alpha+\beta{x}}}{1+e^{\alpha+\beta{x}}}}{\frac{1}{1+e^{\alpha+\beta{x}}}}=e^{\alpha+\beta{x}}$
+
+$\pi(x+k) = \frac{e^{\alpha+\beta{x}+\beta{k}}}{1+e^{\alpha+\beta{x}+\beta{k}}}$
+
+$1-\pi(x+k) = 1-\frac{e^{\alpha+\beta{x}+\beta{k}}}{1+e^{\alpha+\beta{x}+\beta{k}}}=\frac{1}{1+e^{\alpha+\beta{x}+\beta{k}}}$
+
+$\frac{\pi(x+k)}{1-\pi(x+k)}=\frac{\frac{e^{\alpha+\beta{x}+\beta{k}}}{1+e^{\alpha+\beta{x}+\beta{k}}}}{\frac{1}{1+e^{\alpha+\beta{x}+\beta{k}}}}=e^{\alpha+\beta{x}+\beta{k}}$
+
+$\theta=\frac{e^{\alpha+\beta{x}+\beta{k}}}{e^{\alpha+\beta{x}}}$
+$\theta=e^{\beta{k}}$
+
+$\theta$ doesn't depend on $x$.
+
+**2ii)**
+
+The odds ratio at $(x+k)$ depends on $k$, the increase of $x$ rather than $x$.
+When $k = 1$, $\beta$ is the log odds ratio for the effect on $Y_i$ from
+increasing $x$ by one unit.
+
+**Question 3**
+
+```{r}
+library(faraway)
+
+
+data("bliss")
+b <- bliss
+
+m.1 <- glm(cbind(dead,alive) ~ conc,
+           family=binomial, b)
+
+m.2 <- glm(cbind(dead,alive) ~ log(1+conc),
+           family=binomial, b)
+
+plot(b$conc, b$dead/(b$dead+b$alive),
+     xlab = "conc",
+     ylab = "pr.death",
+     main = "m1 reg.line on sample prop.")
+lines(b$conc, m.1$fitted.values,col="red")
+
+
+plot(b$conc, b$dead/(b$dead+b$alive),
+     xlab = "conc",
+     ylab = "pr.death",
+     main = "m2 reg.line on sample prop.")
+lines(b$conc, m.2$fitted.values,col="blue")
+
+
+AIC(m.1)
+
+AIC(m.2)
+```
+
+model1 fits the sample proportions better than model2 does.
+
+model1's AIC score is lower than model2's, meaning model1 
+is the better fit.
+
+**Question 4**
+
+**4i)**
+
+```{r}
+data("pima")
+
+d <- glm(test ~ bmi,family = binomial, pima)
+
+
+plot(pima$bmi, d$fitted.values,
+     xlab = "bmi",
+     ylab = "fitted values")
+
+d$fitted.values[which(pima$bmi == 45)]
+```
+
+**4ii)**
+
+```{r}
+# using linear reg.
+
+m <- lm(test ~ bmi, pima)
+```
+
+The probability a woman with bmi of 45 tests positive for 
+diabetes is 0.6277226
+
+Few of the linear model's fitted values are negative, which
+is problematic because we can't have negative probability. 
+These fitted values are the estimated prob. of testing positive 
+for diabetes five years later, which can't be negative.
+Instances like these are why linear models aren't favored
+when dealing with a binary response.
+
+**Question 5**
+
+```{r}
+library(tidyverse)
+
+pima2 <- pima %>%
+  filter(bmi != 0.0)
+
+d2 <- glm(test ~ bmi, family = binomial, pima2)
+
+
+d$coefficients
+
+d2$coefficients
+
+```
+
+I think cases where bmi = 0.0 should be removed when doing 
+logistic regression; bmi can't be 0.0, and these cases are 
+probably missing data.
+
+After removing these cases and fitting another logistic
+regression model, I found that the fitted values greatly 
+changed, while the coefficients only slightly changed 
+from the analysis in problem 4.
+

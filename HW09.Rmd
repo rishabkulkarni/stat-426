@@ -1,0 +1,213 @@
+---
+title: "HW09"
+author: "Rishab Kulkarni"
+date: "3/28/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**#1**
+
+```{r}
+library(tidyverse)
+library(faraway)
+
+data("pima")
+
+
+# removing cases where bmi=0
+p <- pima %>%
+  filter(`bmi` != 0)
+
+# logistic regression
+m <- glm(test ~. -triceps, family = "binomial", p)
+```
+
+**Part 1**
+
+```{r}
+# measure of predictive power, correlation
+cor(p$test, fitted(m))
+```
+
+**Part 2**
+
+```{r}
+# measure of predictive power using formula
+
+m0 <- glm(test ~ 1, family = "binomial", p)
+as.numeric((logLik(m) - logLik(m0)) / (0 - logLik(m0)))
+```
+
+**#2**
+
+```{r}
+# confusion table with cut-off pi0 = 0.5
+table(y=p$test, yhat=as.numeric(fitted(m) > 0.5))
+```
+
+
+```{r}
+# sensitivity rate
+(156) / (156 + 110)
+```
+
+```{r}
+# specificity rate
+(434) / (434 + 57)
+```
+
+```{r}
+# in-sample classification rate
+(434 + 156) / (757)
+```
+
+**#3**
+
+```{r}
+# leave-one-out cross-validation
+
+pi.cv <- numeric(nrow(p))
+
+for(i in 1:nrow(p)) {
+  pi.cv[i] <- predict(update(m, subset = -i), newdata=p[i, ], type = "response")
+}
+
+table(y=p$test, yhat=as.numeric(pi.cv > 0.5))
+```
+
+
+```{r}
+# cross-validation sensitivity rate
+(153) / (153 + 113)
+```
+
+```{r}
+# cross-validation specificity rate
+(433) / (433 + 58)
+```
+
+```{r}
+# cross-validation classification rate
+(433 + 153) / (757)
+```
+
+The sensitivity, specificity, and classification rate all slightly decreased after
+using leave-one-out cross-validation.
+
+**#4**
+
+```{r}
+# fitting probit and cloglog models
+
+probit <- glm(test ~. -triceps,
+              family = binomial(link = probit), p)
+
+cloglog <- glm(test ~. -triceps,
+               family = binomial(link = cloglog), p)
+```
+
+
+```{r}
+# probit model confusion table
+table(y=p$test, yhat=as.numeric(fitted(probit)) > 0.5)
+```
+
+```{r}
+# probit model sensitivity rate
+(155) / (155 + 111)
+```
+
+```{r}
+# probit model specificity rate
+(436) / (436 + 55)
+```
+
+```{r}
+# probit model classification rate
+(436 + 155) / (757)
+```
+
+```{r}
+# cloglog model confusion table
+
+table(y=p$test, yhat=as.numeric(fitted(cloglog)) > 0.5)
+```
+
+```{r}
+# cloglog model sensitivity rate
+(147) / (147 + 119)
+```
+
+```{r}
+# cloglog model specificity rate
+(444) / (444 + 47)
+```
+
+```{r}
+# cloglog model classification rate
+(444 + 147) / (757)
+```
+
+**#5**
+
+The in-sample classification rates of both the probit and cloglog regression
+models are the same. Thus, we need to look at other measures, such as sensitivity
+and specificity to determine which link function works best.
+
+The sensitivity of the probit link regression is higher than that of the cloglog 
+regression. Therefore, the probit link function works best for this classification
+problem.
+
+We can also use the ROC curve as another metric to determine which of the two models
+works best for this classification problem.
+
+```{r}
+# probit model ROC curve
+
+pihat <- fitted(probit)
+false.neg <- c(0,cumsum(tapply(p$test,pihat,sum)))
+true.neg <- c(0,cumsum(table(pihat))) - false.neg
+par(pty="s")
+plot(1-true.neg/max(true.neg), 1-false.neg/max(false.neg), type="l", main="ROC Curve (Probit Model)", xlab="1 - Specificity", ylab="Sensitivity", xlim=c(0,1), ylim=c(0,1), lwd=3)
+abline(a=0, b=1, lty=2, col="blue")
+```
+
+```{r}
+# probit model
+# area under ROC curve
+
+mean(outer(pihat[p$test==1], pihat[p$test==0], ">")
++ 0.5 * outer(pihat[p$test==1], pihat[p$test==0], "=="))
+```
+
+
+```{r}
+# cloglog model ROC curve
+
+pihat2 <- fitted(cloglog)
+false.neg <- c(0,cumsum(tapply(p$test,pihat2,sum)))
+true.neg <- c(0,cumsum(table(pihat2))) - false.neg
+par(pty="s")
+plot(1-true.neg/max(true.neg), 1-false.neg/max(false.neg), type="l", main="ROC Curve (Cloglog Model)", xlab="1 - Specificity", ylab="Sensitivity", xlim=c(0,1), ylim=c(0,1), lwd=3)
+abline(a=0, b=1, lty=2, col="blue")
+```
+
+```{r}
+# cloglog model
+# area under ROC curve
+
+mean(outer(pihat2[p$test==1], pihat2[p$test==0], ">")
++ 0.5 * outer(pihat2[p$test==1], pihat2[p$test==0], "=="))
+```
+
+The area under ROC curve for the probit regression model is larger than the area
+under ROC curve for the cloglog regression model.
+
+This is further evidence that the probit model works best for this classification
+problem. A higher area under the ROC curve implies better fit.

@@ -1,0 +1,82 @@
+---
+title: "HW10"
+author: "Rishab Kulkarni"
+date: "4/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(VGAM)
+library(faraway)
+
+data("debt")
+d <- na.omit(debt)
+
+d$incomegp <- factor(d$incomegp)
+d$house <- factor(d$house)
+d$singpar <- factor(d$singpar)
+d$agegp <- factor(d$agegp)
+d$bankacc <- factor(d$bankacc)
+d$bsocacc <- factor(d$bsocacc)
+d$manage <- factor(d$manage)
+d$cigbuy <- factor(d$cigbuy)
+d$xmasbuy <- factor(d$xmasbuy)
+
+d$ccarduse <- factor(d$ccarduse, levels = c(1,2,3), ordered = TRUE)
+
+m <- vglm(ccarduse ~., family = propodds(reverse=FALSE), d)
+summary(m)
+```
+
+incomegp, house, children, agegp, bankacc, manage, cigbuy, and prodebt are
+significant coefficients at the 5% level.
+
+If we consider incomegp2, we can estimate the odds of high credit card usage for
+incomegp2 relative to the other income groups:
+
+```{r}
+exp(-0.9713)
+```
+
+
+```{r}
+step4vglm(m, direction = "backward")
+```
+
+```{r}
+# final model obtained from backwards elimination
+
+m.fin <- vglm(ccarduse ~ incomegp + children + agegp + bankacc + bsocacc + cigbuy + xmasbuy + prodebt, family = propodds(reverse=FALSE), d)
+
+summary(m.fin)
+```
+
+The final model's predictors are income, children, agegp, bankacc, bsocacc,
+cigbuy, xmasbuy, prodebt.
+
+
+```{r}
+x <- d[, c(1,3,5,6,7,10,11,13)]
+med <- c()
+
+for(i in 1:8) {
+  med[i] <- median(as.numeric(x[,i]))
+}
+
+med
+
+```
+
+```{r}
+
+predict(m.fin, newdata=data.frame(incomegp=3, children=1, agegp=2, bankacc21, bsocacc=2, cigbuy=1, xmasbuy=2, prodebt=3.18), type="response")
+
+```
+
+
+
+

@@ -1,0 +1,243 @@
+---
+title: "HW07"
+author: "Rishab Kulkarni"
+date: "3/9/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**1.**
+
+```{r}
+library(tidyverse)
+library(faraway)
+data("pima")
+
+pima <- pima %>%
+  filter(`bmi`!=0.0, `triceps`!=0)
+
+m1 <- glm(test ~ bmi + age,
+          family = binomial,
+          pima)
+
+m2 <- glm(test ~ bmi + age + 
+            triceps + pregnant,
+          family = binomial, pima)
+
+summary(m2)
+```
+
+The parameters in logistic regression 
+are the log odds ratio associated with 
+a one-unit increase of the predictor.
+
+For every one-unit increase in bmi, the 
+chances of developing diabetes changes 
+by a factor of $e^{0.09755}$ or 1.1025
+
+For every one-unit increase in age, the 
+chances of developing diabetes changes 
+by a factor of $e^{0.04893}$ or 1.05
+
+For every one-unit increase in triceps, 
+the chances of developing diabetes changes 
+by a factor of $e^{0.01182}$ or 1.012
+
+For every one-unit increase in pregnant, 
+the chances of developing diabetes changes 
+by a factor of $e^{0.07912}$ or 1.082
+
+**2.**
+
+```{r}
+
+plot(pima$bmi, m2$fitted.values,
+     xlab = "bmi", ylab = "fit",
+     main = "bmi", col="red")
+
+plot(pima$age, m2$fitted.values,
+     xlab = "age", ylab = "fit",
+     main = "age", col="blue")
+
+plot(pima$triceps, m2$fitted.values,
+     xlab = "triceps", ylab = "fit",
+     main = "triceps", col="purple")
+
+plot(pima$pregnant, m2$fitted.values,
+     xlab = "pregnant", ylab = "fit",
+     main = "pregnant", col="green4")
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+
+plot(pima$bmi, predict.glm(m2),
+     pch=19, cex = 0.5, col="red",
+     xlab = "bmi", ylab = "fit")
+
+plot(pima$age, predict.glm(m2),
+     pch=19, cex=0.5, col="blue",
+     xlab = "age",ylab = "fit")
+
+plot(pima$triceps, predict.glm(m2),
+     pch=19, cex=0.5, col="darkgreen",
+     xlab = "triceps", ylab = "fit")
+
+plot(pima$pregnant, predict.glm(m2),
+     pch=19, cex=0.5, col="purple",
+     xlab = "pregnant", ylab = "fit")
+
+```
+
+```{r}
+library(boot)
+
+# leverages
+lev <- glm.diag(m2)$h
+
+
+which.max(lev)
+
+pima %>%
+  filter(`age`==28)
+
+```
+
+case 410 had the highest leverage
+
+After examining her data, I found that her
+insulin value was much higher than other
+cases. Her glucose and triceps were also
+faintly higher than other cases.
+
+case 410 had an age of 28 and since age
+was a significant predictor, I filtered
+the data to include only cases where age
+was 28. Then, I compared case 410 to the
+other cases.
+
+case 410 had much higher insulin than 
+other cases; glucose, triceps, and bmi
+were also higher in case 410 than the
+other cases.
+
+also compared case 410 to other cases
+without filtering for age and case 410
+had much higher insulin - 579, than other 
+cases in the data. She also had higher 
+glucose and triceps.
+
+glucose and triceps were a bit higher,
+but insulin was way higher than the
+insulin in other cases. Thus, I can
+believe the glucose and triceps value,
+but not the insulin value.
+
+
+```{r}
+anova(m1, m2, test = "Chisq")
+```
+
+p-value was 0.06834
+
+at the 5% level, we fail to reject the
+null hypothesis that model1 and model2
+fit the data equally well.
+
+we've ample evidence that suggests that
+both models fit the data equally well.
+
+**3.**
+
+```{r}
+library(lmtest)
+
+lrtest(m1, m2)
+```
+
+this time, using `lrtest()`
+
+The p-value was 0.06834 again.
+
+at the 5% level, we fail to reject the 
+null hypothesis that the reduced and 
+full model fit the data equally well.
+
+we've ample evidence that suggests 
+both models fit the data equally well.
+
+**4.**
+
+```{r}
+newdata <- data.frame(pregnant=10, bmi=40,
+                      age=50, triceps=40)
+
+predict(m2, newdata, type = "response")
+
+predict(m2, newdata, type = "response",
+        se.fit = TRUE)$se.fit
+
+```
+
+**5.**
+
+```{r}
+# glucose
+m.gluc <- glm(test ~ bmi + age + triceps
+             + pregnant + glucose,
+             family = binomial, pima)
+
+# diastolic
+m.dias <- glm(test ~ bmi + age + triceps
+             + pregnant + diastolic,
+             family = binomial, pima)
+
+# insulin
+m.ins <- glm(test ~ bmi + age + triceps
+             + pregnant + insulin,
+             family = binomial, pima)
+
+# diabetes
+m.diab <- glm(test ~ bmi + age + triceps
+             + pregnant + diabetes,
+             family = binomial, pima)
+```
+
+
+```{r}
+anova(m2, m.gluc, test = "Chisq")
+```
+
+
+```{r}
+anova(m2, m.dias, test = "Chisq")
+```
+
+
+```{r}
+anova(m2, m.ins, test = "Chisq")
+```
+
+
+```{r}
+anova(m2, m.diab, test = "Chisq")
+```
+
+the glucose predictor resulted in the
+smallest p-value of the Wald test for
+significance, which was < 2.2e-16.
+
+
+```{r}
+summary(m.gluc)
+```
+
+for every one-unit increase in glucose, the
+chances of developing diabetes changes by a
+factor of $e^{0.031148}$ or ~1.032
